@@ -196,8 +196,8 @@ textarea.field{height:96px;padding:11px;resize:vertical}
 /* Mobile-first refinements */
 html,body{overflow-x:hidden}
 .app{padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right)}
-.header{flex-wrap:wrap}
-.header-actions{flex-wrap:wrap;gap:6px}
+.header{flex-wrap:nowrap}
+.header-actions{flex-wrap:nowrap;gap:6px}
 .brand-text strong{font-size:15px}
 .btn{min-height:44px}
 .field{min-height:44px}
