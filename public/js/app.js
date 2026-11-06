@@ -408,7 +408,7 @@ $('#confirmImportBtn').onclick = async () => {
     const items = Array.isArray(data) ? data : (Array.isArray(data.items) ? data.items : null);
     if(!items) throw new Error('ساختار پشتیبان نامعتبر است: آرایه items یافت نشد.');
 
-    if(!Array.isArray(data) && data.app && data.app !== 'YELLOWREEL') throw new Error('فایل پشتیبان YELLOWREEL نیست.');
+    if(!Array.isArray(data) && data.app && !['YELLOWREEL','YellowSave'].includes(data.app)) throw new Error('فایل پشتیبان YellowSave نیست.');
     if(!Array.isArray(data) && data.version && data.version !== 2) throw new Error('نسخه پشتیبان پشتیبانی نمی‌شود. فقط نسخه ۲.');
 
     $('#importStageText').textContent = 'در حال بررسی عنوان‌های تکراری...';
@@ -430,7 +430,7 @@ $('#confirmImportBtn').onclick = async () => {
       method:'POST',
       credentials:'same-origin',
       headers: { 'Content-Type':'application/json', 'X-CSRF-Token': csrfToken },
-      body: JSON.stringify({ app:'YELLOWREEL', version:2, exportedAt: data.exportedAt || new Date().toISOString(), items, mode })
+      body: JSON.stringify({ app: data.app || 'YellowSave', version: data.version || 2, exportedAt: data.exportedAt || new Date().toISOString(), items, mode })
     });
 
     if(!res.ok){
@@ -538,7 +538,7 @@ $('#exportBtn').onclick = async () => {
     // check empty? server returns items; if 0 maybe still file. We'll notify empty if content indicates? Keep success.
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = 'yellowreel.json';
+    a.download = 'yellowsave.json';
     a.click();
     setTimeout(()=>URL.revokeObjectURL(a.href),500);
     notify('success', 'فایل پشتیبان آماده شد.');

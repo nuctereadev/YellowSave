@@ -85,7 +85,7 @@ app.use((err, req, res, next) => {
 const PORT = process.env.PORT || 3000;
 if (require.main === module) {
   const server = app.listen(PORT, () => {
-    console.log(`YELLOWREEL server running on http://localhost:${PORT}`);
+    console.log(`YellowSave server running on http://localhost:${PORT}`);
   });
   module.exports.server = server;
 }

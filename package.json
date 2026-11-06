@@ -1,7 +1,7 @@
 {
-  "name": "yellowreel",
+  "name": "yellowsave",
   "version": "2.0.0",
-  "description": "YELLOWREEL multi-user movie and series tracker",
+  "description": "YellowSave multi-user movie and series tracker",
   "main": "server/app.js",
   "scripts": {
     "start": "node server/app.js",

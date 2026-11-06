@@ -1,4 +1,4 @@
-# YELLOWREEL
+# YellowSave
 
 A lightweight, secure, multi-user movie and TV series tracker.
 

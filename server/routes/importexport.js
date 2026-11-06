@@ -38,7 +38,7 @@ router.get('/export', async (req, res) => {
   try {
     const items = await mediaService.listMedia(req.session.userId, { sort: 'oldest' });
     const backup = {
-      app: 'YELLOWREEL',
+      app: 'YellowSave',
       version: 2,
       exportedAt: new Date().toISOString(),
       items: items.map((x) => ({
@@ -56,7 +56,7 @@ router.get('/export', async (req, res) => {
       }))
     };
     res.setHeader('Content-Type', 'application/json');
-    res.setHeader('Content-Disposition', 'attachment; filename="yellowreel.json"');
+    res.setHeader('Content-Disposition', 'attachment; filename="yellowsave.json"');
     res.send(JSON.stringify(backup, null, 2));
   } catch (e) {
     console.error(e);
@@ -77,8 +77,8 @@ router.post('/import', async (req, res) => {
     sendLine(res, { error: 'ساختار پشتیبان نامعتبر است: آرایه items یافت نشد.' });
     return res.end();
   }
-  if (!Array.isArray(body) && body.app && body.app !== 'YELLOWREEL') {
-    sendLine(res, { error: 'فایل پشتیبان YELLOWREEL نیست.' });
+  if (!Array.isArray(body) && body.app && !['YELLOWREEL','YellowSave'].includes(body.app)) {
+    sendLine(res, { error: 'فایل پشتیبان YellowSave نیست.' });
     return res.end();
   }
   if (!Array.isArray(body) && body.version && body.version !== 2) {
