@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0b0b0b">
+<title>YELLOWREEL — My Watchlist</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Vazirmatn:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+<!-- AUTH SCREEN -->
+<div id="authScreen" class="auth-screen">
+  <div class="auth-card">
+    <div class="brand" style="margin-bottom:14px">
+      <div class="logo">Y</div>
+      <div class="brand-text"><strong>YELLOWREEL</strong><span>My movies & series</span></div>
+    </div>
+    <h1>خوش آمدی.</h1>
+    <p>برای ادامه وارد شو یا ثبت‌نام کن.</p>
+    <div class="auth-tabs">
+      <button id="tabLogin" class="active">ورود</button>
+      <button id="tabRegister">ثبت‌نام</button>
+    </div>
+
+    <div id="loginForm" class="auth-form">
+      <div class="group"><label class="label">نام کاربری</label><input class="field" id="loginUsername" autocomplete="username"></div>
+      <div class="group"><label class="label">رمز عبور</label><input class="field" id="loginPassword" type="password" autocomplete="current-password"></div>
+      <div class="auth-error" id="loginError"></div>
+      <button class="btn btn-primary auth-submit" id="loginBtn">ورود</button>
+    </div>
+
+    <div id="registerForm" class="auth-form hidden">
+      <div class="group"><label class="label">نام کاربری</label><input class="field" id="regUsername" autocomplete="username"></div>
+      <div class="group"><label class="label">رمز عبور</label><input class="field" id="regPassword" type="password" autocomplete="new-password"></div>
+      <div class="group"><label class="label">تکرار رمز عبور</label><input class="field" id="regConfirm" type="password" autocomplete="new-password"></div>
+      <div class="auth-error" id="regError"></div>
+      <button class="btn btn-primary auth-submit" id="registerBtn">ثبت‌نام</button>
+    </div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="appScreen" class="hidden">
+  <div class="app">
+    <header class="header">
+      <div class="brand">
+        <div class="logo">Y</div>
+        <div class="brand-text"><strong>YELLOWREEL</strong><span id="welcomeUser">My movies & series</span></div>
+      </div>
+      <div class="header-actions">
+        <nav class="nav">
+          <button id="navDashboard" class="active">داشبورد</button>
+          <button id="navProfile">پروفایل</button>
+        </nav>
+        <button class="btn btn-text optional" id="importBtn">Import</button>
+        <button class="btn btn-text optional" id="exportBtn">Export</button>
+        <input id="fileInput" type="file" accept="application/json" hidden>
+        <button class="btn btn-primary" id="addBtn">＋ افزودن</button>
+        <button class="btn btn-text" id="logoutBtn">خروج</button>
+      </div>
+    </header>
+
+    <!-- DASHBOARD VIEW -->
+    <div id="dashboardView">
+      <section class="intro">
+        <div>
+          <h1>چیزهایی که دیدم.</h1>
+          <p>فیلم‌ها و سریال‌هایت را ساده و مرتب نگه دار.</p>
+        </div>
+        <div class="stats">
+          <div class="stat"><strong id="totalStat">0</strong><span>همه</span></div>
+          <div class="stat"><strong id="movieStat">0</strong><span>فیلم</span></div>
+          <div class="stat"><strong id="seriesStat">0</strong><span>سریال</span></div>
+          <div class="stat"><strong id="avgStat">—</strong><span>میانگین امتیاز</span></div>
+        </div>
+      </section>
+
+      <div class="tools">
+        <div class="search"><input id="search" type="search" placeholder="جستجو در عنوان‌ها..."></div>
+        <select id="typeFilter"><option value="all">همه</option><option value="movie">فیلم</option><option value="series">سریال</option></select>
+        <select id="sort"><option value="newest">جدیدترین</option><option value="oldest">قدیمی‌ترین</option><option value="rating">امتیاز</option><option value="title">نام</option></select>
+        <button class="btn" id="randomBtn">تصادفی</button>
+      </div>
+
+      <div class="filters">
+        <button class="filter active" data-chip="all">همه</button>
+        <button class="filter" data-chip="watched">دیده‌شده</button>
+        <button class="filter" data-chip="watching">در حال تماشا</button>
+        <button class="filter" data-chip="wishlist">برای بعد</button>
+      </div>
+
+      <main class="grid" id="grid"></main>
+    </div>
+
+    <!-- PROFILE VIEW -->
+    <div id="profileView" class="hidden">
+      <div class="profile">
+        <div class="profile-card">
+          <div class="avatar" id="avatar">Y</div>
+          <div class="profile-info">
+            <h2 id="profileUsername">—</h2>
+            <p id="profileCreated">—</p>
+          </div>
+        </div>
+        <div class="profile-stats">
+          <div class="profile-stat"><strong id="pMovies">0</strong><span>فیلم</span></div>
+          <div class="profile-stat"><strong id="pSeries">0</strong><span>سریال</span></div>
+          <div class="profile-stat"><strong id="pWatched">0</strong><span>دیده‌شده</span></div>
+          <div class="profile-stat"><strong id="pAvg">—</strong><span>میانگین امتیاز</span></div>
+        </div>
+
+        <div class="settings-section">
+          <h3>تغییر رمز عبور</h3>
+          <div class="group"><label class="label">رمز عبور فعلی</label><input class="field" id="cpCurrent" type="password"></div>
+          <div class="group"><label class="label">رمز عبور جدید</label><input class="field" id="cpNew" type="password"></div>
+          <div class="group"><label class="label">تکرار رمز عبور جدید</label><input class="field" id="cpConfirm" type="password"></div>
+          <div class="auth-error" id="cpError"></div>
+          <button class="btn btn-primary btn-sm" id="cpBtn" style="margin-top:8px">ذخیره</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-wrap" id="modalWrap">
+  <div class="modal">
+    <div class="modal-head"><h2 id="modalTitle">افزودن عنوان</h2><button class="close" id="closeModal">×</button></div>
+    <form id="mediaForm">
+      <div class="form-grid">
+        <div class="group full"><label class="label">نام *</label><input class="field" id="fTitle" required placeholder="The Mandalorian"></div>
+        <div class="group"><label class="label">نوع</label><select class="field" id="fType"><option value="movie">فیلم</option><option value="series">سریال</option></select></div>
+        <div class="group"><label class="label">وضعیت</label><select class="field" id="fStatus"><option value="watched">دیده‌شده</option><option value="watching">در حال تماشا</option><option value="wishlist">برای بعد</option></select></div>
+        <div class="group"><label class="label">سال</label><input class="field" id="fYear" type="number" min="1888" max="2200" placeholder="2026"></div>
+        <div class="group"><label class="label" id="ratingLabel">امتیاز من <span class="optional">اختیاری</span></label><input class="field" id="fRating" type="number" min="0" max="10" step="0.1" placeholder="مثلاً 8.5"></div>
+        <div class="group full"><label class="label">پوستر — آدرس تصویر</label><input class="field" id="fPoster" type="url" placeholder="https://..."></div>
+        <div class="group full" id="progressGroup"><label class="label">قسمتی که رسیدم</label><input class="field" id="fProgress" placeholder="S02 E05"></div>
+        <div class="group full"><label class="label">یادداشت</label><textarea class="field" id="fNotes" placeholder="نظر یا یادداشت کوتاه..."></textarea></div>
+      </div>
+      <div class="modal-foot"><button class="btn btn-primary" type="submit">ذخیره</button><button class="btn" type="button" id="cancelBtn">لغو</button></div>
+    </form>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script src="/js/app.js"></script>
+</body>
+</html>

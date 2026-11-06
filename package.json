@@ -1,0 +1,26 @@
+{
+  "name": "yellowreel",
+  "version": "2.0.0",
+  "description": "YELLOWREEL multi-user movie and series tracker",
+  "main": "server/app.js",
+  "scripts": {
+    "start": "node server/app.js",
+    "dev": "node server/app.js",
+    "migrate": "node server/database/migrate.js",
+    "test": "node scripts/smoke-test.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "connect-pg-simple": "^10.0.0",
+    "dotenv": "^17.0.0",
+    "express": "^5.1.0",
+    "express-rate-limit": "^8.0.0",
+    "express-session": "^1.18.0",
+    "helmet": "^8.0.0",
+    "pg": "^8.23.1"
+  }
+}
