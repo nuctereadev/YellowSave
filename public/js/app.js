@@ -82,11 +82,22 @@ async function ensureCsrf(){
 }
 
 // ---------- Auth UI ----------
+let authState = 'loading';
+function showLoading(){
+  authState = 'loading';
+  $('#loadingScreen').classList.remove('hidden');
+  $('#authScreen').classList.add('hidden');
+  $('#appScreen').classList.add('hidden');
+}
 function showAuth(){
+  authState = 'unauthenticated';
+  $('#loadingScreen').classList.add('hidden');
   $('#authScreen').classList.remove('hidden');
   $('#appScreen').classList.add('hidden');
 }
 function showApp(){
+  authState = 'authenticated';
+  $('#loadingScreen').classList.add('hidden');
   $('#authScreen').classList.add('hidden');
   $('#appScreen').classList.remove('hidden');
 }
@@ -575,9 +586,9 @@ window.openModal=openModal; window.editItem=editItem; window.deleteItem=deleteIt
 
 // ---------- Boot ----------
 (async () => {
+  showLoading();
   try {
-    await ensureCsrf();
-    const me = await api('/api/auth/me').catch(()=>null);
+    const me = await api('/api/auth/me');
     if (me && me.user) {
       currentUser = me.user;
       csrfToken = me.csrfToken || csrfToken;
@@ -585,10 +596,20 @@ window.openModal=openModal; window.editItem=editItem; window.deleteItem=deleteIt
       await fetchItems();
       showApp();
       enterDashboard();
-    } else {
-      showAuth();
+      return;
     }
-  } catch(e) {
+    // no user -> unauthenticated
+    await ensureCsrf().catch(()=>{});
     showAuth();
+  } catch(e) {
+    if (e.status === 401) {
+      await ensureCsrf().catch(()=>{});
+      showAuth();
+      return;
+    }
+    // server/network error: show auth with retry option
+    await ensureCsrf().catch(()=>{});
+    showAuth();
+    notify('error', e.status === 0 ? 'ارتباط با سرور برقرار نشد.' : 'خطا در بررسی نشست کاربری. دوباره تلاش کنید.');
   }
 })();
