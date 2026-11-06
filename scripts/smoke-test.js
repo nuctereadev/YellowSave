@@ -87,8 +87,12 @@ async function req(jar, path, opts={}){
   const fs = require('fs');
   const backup = JSON.parse(fs.readFileSync('C:/Users/Asus/Documents/Default Project/YellowSave/yellowreel (8).json','utf8'));
   // remove a few? use all
-  r = await req(jarA, '/api/import', { method:'POST', headers:{'Content-Type':'application/json','X-CSRF-Token':csa}, body: JSON.stringify(backup) });
-  console.log('import', r.status, r.data);
+  // import (NDJSON stream)
+  const importRes = await fetch(BASE + '/api/import', { method:'POST', headers:{'Content-Type':'application/json','X-CSRF-Token':csa,'Cookie':jarA.header()}, body: JSON.stringify(backup), credentials:'include' });
+  const importText = await importRes.text();
+  const importLines = importText.trim().split('\n').map(l=>{try{return JSON.parse(l);}catch{return null;}}).filter(Boolean);
+  const importResult = importLines.find(l=>l.result) || importLines[importLines.length-1];
+  console.log('import', importRes.status, importResult);
   r = await req(jarA, '/api/media');
   console.log('A media after import', r.data.items.length);
 

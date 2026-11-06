@@ -7,8 +7,13 @@ const mediaService = require('../services/mediaService');
 const router = express.Router();
 router.use(requireAuth);
 
+function sendLine(res, obj){
+  res.write(JSON.stringify(obj) + '\n');
+  if (typeof res.flush === 'function') res.flush();
+}
+
 function validateItem(item) {
-  if (!item || typeof item !== 'object') return 'item must be object';
+  if (!item || typeof item !== 'object' || Array.isArray(item)) return 'item must be object';
   if (typeof item.title !== 'string' || !item.title.trim()) return 'title required';
   if (item.title.length > 200) return 'title too long';
   if (!['movie', 'series'].includes(item.type)) return 'invalid type';
@@ -23,6 +28,9 @@ function validateItem(item) {
   }
   if (item.progress != null && String(item.progress).length > 100) return 'progress too long';
   if (item.notes != null && String(item.notes).length > 5000) return 'notes too long';
+  if (item.id != null && (typeof item.id !== 'string' || item.id.length > 100)) return 'invalid id';
+  if (item.createdAt != null && typeof item.createdAt !== 'number') return 'invalid createdAt';
+  if (item.updatedAt != null && typeof item.updatedAt !== 'number') return 'invalid updatedAt';
   return null;
 }
 
@@ -52,53 +60,101 @@ router.get('/export', async (req, res) => {
     res.send(JSON.stringify(backup, null, 2));
   } catch (e) {
     console.error(e);
-    res.status(500).json({ error: 'Export failed.' });
+    res.status(500).json({ error: 'ساخت فایل پشتیبان انجام نشد.' });
   }
 });
 
 router.post('/import', async (req, res) => {
+  res.setHeader('Content-Type', 'application/x-ndjson');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('X-Accel-Buffering', 'no');
+
+  const body = req.body || {};
+  const incomingRaw = Array.isArray(body) ? body : (Array.isArray(body.items) ? body.items : null);
+  const mode = body.mode === 'replace' ? 'replace' : 'merge';
+
+  if (!incomingRaw) {
+    sendLine(res, { error: 'ساختار پشتیبان نامعتبر است: آرایه items یافت نشد.' });
+    return res.end();
+  }
+  if (!Array.isArray(body) && body.app && body.app !== 'YELLOWREEL') {
+    sendLine(res, { error: 'فایل پشتیبان YELLOWREEL نیست.' });
+    return res.end();
+  }
+  if (!Array.isArray(body) && body.version && body.version !== 2) {
+    sendLine(res, { error: 'نسخه پشتیبان پشتیبانی نمی‌شود. فقط نسخه ۲.' });
+    return res.end();
+  }
+  if (incomingRaw.length === 0) {
+    sendLine(res, { error: 'پشتیبان خالی است.' });
+    return res.end();
+  }
+  if (incomingRaw.length > 5000) {
+    sendLine(res, { error: 'تعداد عنوان‌ها بیش از حد مجاز (۵۰۰۰) است.' });
+    return res.end();
+  }
+
+  sendLine(res, { stage: 'validating' });
+
+  // validate all
+  const errors = [];
+  incomingRaw.forEach((item, i) => {
+    const err = validateItem(item);
+    if (err) errors.push({ index: i, id: item && item.id, title: item && item.title, reason: err });
+  });
+  // duplicate ids within backup
+  const seen = new Set();
+  for (const item of incomingRaw) {
+    if (item && item.id) {
+      if (seen.has(item.id)) {
+        errors.push({ index: -1, id: item.id, title: item.title, reason: 'duplicate id in backup' });
+      } else seen.add(item.id);
+    }
+  }
+
+  if (errors.length) {
+    sendLine(res, { error: 'اعتبارسنجی پشتیبان ناموفق بود.', failed: errors.length, errors });
+    return res.end();
+  }
+
+  const userId = req.session.userId;
+
+  const client = await db.connect();
   try {
-    const body = req.body || {};
-    const incomingRaw = Array.isArray(body) ? body : (Array.isArray(body.items) ? body.items : null);
-    if (!incomingRaw) {
-      return res.status(400).json({ error: 'Invalid backup: items array missing.' });
+    await client.query('BEGIN');
+
+    if (mode === 'replace') {
+      await client.query('DELETE FROM media_items WHERE user_id = $1', [userId]);
     }
 
-    const errors = [];
-    incomingRaw.forEach((item, i) => {
-      const err = validateItem(item);
-      if (err) errors.push(`item ${i}: ${err}`);
-    });
-    if (errors.length) {
-      return res.status(400).json({ error: 'Validation failed.', details: errors.slice(0, 10) });
-    }
-
-    const seen = new Set();
-    for (const item of incomingRaw) {
-      const id = item.id || null;
-      if (id) {
-        if (seen.has(id)) {
-          return res.status(400).json({ error: 'Duplicate id within import: ' + id });
-        }
-        seen.add(id);
-      }
-    }
-
-    const userId = req.session.userId;
     let imported = 0;
     let skipped = 0;
+    const total = incomingRaw.length;
+    const batchSize = 100;
 
-    const client = await db.connect();
-    try {
-      await client.query('BEGIN');
-      for (const item of incomingRaw) {
+    sendLine(res, { stage: 'saving', processed: 0, total });
+
+    for (let i = 0; i < incomingRaw.length; i += batchSize) {
+      const batch = incomingRaw.slice(i, i + batchSize);
+      // For merge mode, filter existing
+      const toInsert = [];
+      for (const item of batch) {
         const id = item.id ? String(item.id) : crypto.randomUUID();
-        const exists = await client.query('SELECT id FROM media_items WHERE user_id = $1 AND id = $2', [userId, id]);
-        if (exists.rowCount) { skipped++; continue; }
-        await client.query(
-          `INSERT INTO media_items (id, user_id, title, type, status, year, rating, poster, progress, notes, created_at, updated_at)
-           VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)`,
-          [
+        if (mode === 'merge') {
+          const exists = await client.query('SELECT 1 FROM media_items WHERE user_id = $1 AND id = $2', [userId, id]);
+          if (exists.rowCount) { skipped++; continue; }
+        }
+        toInsert.push({ item, id });
+      }
+
+      if (toInsert.length) {
+        // bulk insert
+        const values = [];
+        const params = [];
+        let p = 1;
+        for (const { item, id } of toInsert) {
+          values.push(`($${p++},$${p++},$${p++},$${p++},$${p++},$${p++},$${p++},$${p++},$${p++},$${p++},$${p++},$${p++})`);
+          params.push(
             id, userId,
             String(item.title).trim(),
             item.type,
@@ -110,22 +166,30 @@ router.post('/import', async (req, res) => {
             item.notes == null || item.notes === '' ? null : String(item.notes),
             typeof item.createdAt === 'number' ? item.createdAt : Date.now(),
             typeof item.updatedAt === 'number' ? item.updatedAt : Date.now()
-          ]
+          );
+        }
+        await client.query(
+          `INSERT INTO media_items (id, user_id, title, type, status, year, rating, poster, progress, notes, created_at, updated_at) VALUES ${values.join(',')}`,
+          params
         );
-        imported++;
+        imported += toInsert.length;
       }
-      await client.query('COMMIT');
-    } catch (e) {
-      await client.query('ROLLBACK');
-      throw e;
-    } finally {
-      client.release();
+
+      sendLine(res, { stage: 'saving', processed: Math.min(i + batch.length, total), total });
     }
 
-    res.json({ imported, skipped, total: incomingRaw.length });
+    await client.query('COMMIT');
+
+    sendLine(res, { stage: 'done' });
+    sendLine(res, { result: { imported, skipped, failed: 0, total, errors: [] } });
+    res.end();
   } catch (e) {
-    console.error(e);
-    res.status(500).json({ error: 'Import failed.' });
+    await client.query('ROLLBACK').catch(() => {});
+    console.error('import error', e);
+    sendLine(res, { error: 'خطا در ذخیره اطلاعات در دیتابیس.' });
+    res.end();
+  } finally {
+    client.release();
   }
 });
 

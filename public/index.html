@@ -144,7 +144,39 @@
     </form>
   </div>
 </div>
-<div class="toast" id="toast"></div>
+<div class="modal-wrap" id="importModalWrap">
+  <div class="modal">
+    <div class="modal-head"><h2 id="importModalTitle">Import پشتیبان</h2><button class="close" id="closeImportModal">×</button></div>
+    <div id="importStepOptions">
+      <p class="import-stage">یک فایل پشتیبان YELLOWREEL v2 انتخاب کنید. سپس حالت Import را مشخص کنید.</p>
+      <div class="import-mode">
+        <label><input type="radio" name="importMode" value="merge" checked> ادغام ایمن (پیش‌فرض)</label>
+        <label><input type="radio" name="importMode" value="replace"> جایگزینی کامل</label>
+      </div>
+      <div class="import-warning hidden" id="replaceWarning">⚠ با جایگزینی کامل، تمام عنوان‌های فعلی شما حذف و با عنوان‌های پشتیبان جایگزین می‌شوند.</div>
+      <div class="modal-foot"><button class="btn btn-primary" id="confirmImportBtn">شروع Import</button><button class="btn" type="button" id="cancelImportBtn">لغو</button></div>
+    </div>
+    <div id="importStepProgress" class="hidden">
+      <div class="import-progress">
+        <div class="import-spinner"></div>
+        <div class="import-stage" id="importStageText">در حال آماده‌سازی...</div>
+        <div class="import-counts hidden" id="importCounts">
+          <div class="import-count"><strong id="importTotal">0</strong><span>کل عنوان‌ها</span></div>
+          <div class="import-count"><strong id="importProcessed">0</strong><span>پردازش‌شده</span></div>
+        </div>
+      </div>
+    </div>
+    <div id="importStepResult" class="hidden">
+      <div class="import-progress">
+        <div class="import-stage" id="importResultText"></div>
+        <div class="import-counts" id="importResultCounts"></div>
+        <div class="import-report hidden" id="importReport"></div>
+        <div class="modal-foot"><button class="btn btn-primary" id="closeImportResultBtn">بستن</button><button class="btn btn-text" id="downloadReportBtn">دانلود گزارش</button></div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="toast-container" id="toastContainer"></div>
 
 <script src="/js/app.js"></script>
 </body>
