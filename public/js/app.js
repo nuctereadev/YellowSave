@@ -582,6 +582,56 @@ $('#cpBtn').onclick = async () => {
   } finally { setLoading(btn, false); }
 };
 
+// ---------- Mobile hamburger menu ----------
+const hamburgerBtn = $('#hamburgerBtn');
+const mobileMenu = $('#mobileMenu');
+const mobileMenuBackdrop = mobileMenu ? mobileMenu.querySelector('.mobile-menu-backdrop') : null;
+function openMobileMenu(){ if(!mobileMenu) return; mobileMenu.classList.remove('hidden'); mobileMenu.classList.add('open'); document.body.style.overflow='hidden'; }
+function closeMobileMenu(){ if(!mobileMenu) return; mobileMenu.classList.remove('open'); setTimeout(()=>mobileMenu.classList.add('hidden'), 220); document.body.style.overflow=''; }
+if(hamburgerBtn) hamburgerBtn.addEventListener('click', openMobileMenu);
+if(mobileMenuBackdrop) mobileMenuBackdrop.addEventListener('click', closeMobileMenu);
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeMobileMenu(); });
+if(mobileMenu){
+  mobileMenu.querySelectorAll('.mobile-menu-item').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const action = btn.dataset.action;
+      closeMobileMenu();
+      setTimeout(()=>{
+        if(action==='dashboard') enterDashboard();
+        else if(action==='profile') enterProfile();
+        else if(action==='import') $('#importBtn').click();
+        else if(action==='export') $('#exportBtn').click();
+        else if(action==='logout') $('#logoutBtn').click();
+      }, 220);
+    });
+  });
+}
+
+// ---------- Move Add button on mobile ----------
+const mobileAddSlot = $('#mobileAddSlot');
+const headerActions = document.querySelector('.header-actions');
+const addBtn = $('#addBtn');
+function placeAddButton(){
+  if(!addBtn || !mobileAddSlot || !headerActions) return;
+  if(window.innerWidth <= 600){
+    if(addBtn.parentElement !== mobileAddSlot){
+      mobileAddSlot.appendChild(addBtn);
+      addBtn.classList.add('mobile-add-btn');
+      addBtn.classList.remove('btn-primary');
+      addBtn.classList.add('btn-primary');
+    }
+    mobileAddSlot.classList.remove('hidden');
+  } else {
+    if(addBtn.parentElement !== headerActions){
+      headerActions.appendChild(addBtn);
+      addBtn.classList.remove('mobile-add-btn');
+    }
+    mobileAddSlot.classList.add('hidden');
+  }
+}
+placeAddButton();
+window.addEventListener('resize', placeAddButton);
+
 window.openModal=openModal; window.editItem=editItem; window.deleteItem=deleteItem;
 
 // ---------- Boot ----------
