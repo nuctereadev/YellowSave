@@ -136,19 +136,12 @@ router.post('/import', async (req, res) => {
 
     for (let i = 0; i < incomingRaw.length; i += batchSize) {
       const batch = incomingRaw.slice(i, i + batchSize);
-      // For merge mode, filter existing
-      const toInsert = [];
-      for (const item of batch) {
-        const id = item.id ? String(item.id) : crypto.randomUUID();
-        if (mode === 'merge') {
-          const exists = await client.query('SELECT 1 FROM media_items WHERE user_id = $1 AND id = $2', [userId, id]);
-          if (exists.rowCount) { skipped++; continue; }
-        }
-        toInsert.push({ item, id });
-      }
+      const toInsert = batch.map(item => ({
+        item,
+        id: item.id ? String(item.id) : crypto.randomUUID()
+      }));
 
       if (toInsert.length) {
-        // bulk insert
         const values = [];
         const params = [];
         let p = 1;
@@ -168,11 +161,13 @@ router.post('/import', async (req, res) => {
             typeof item.updatedAt === 'number' ? item.updatedAt : Date.now()
           );
         }
-        await client.query(
-          `INSERT INTO media_items (id, user_id, title, type, status, year, rating, poster, progress, notes, created_at, updated_at) VALUES ${values.join(',')}`,
+        const result = await client.query(
+          `INSERT INTO media_items (id, user_id, title, type, status, year, rating, poster, progress, notes, created_at, updated_at) VALUES ${values.join(',')} ON CONFLICT (user_id, id) DO NOTHING`,
           params
         );
-        imported += toInsert.length;
+        const inserted = result.rowCount || 0;
+        imported += inserted;
+        skipped += toInsert.length - inserted;
       }
 
       sendLine(res, { stage: 'saving', processed: Math.min(i + batch.length, total), total });
