@@ -40,15 +40,15 @@
 
     <div id="loginForm" class="auth-form">
       <div class="group"><label class="label">نام کاربری</label><input class="field" id="loginUsername" autocomplete="username"></div>
-      <div class="group"><label class="label">رمز عبور</label><input class="field" id="loginPassword" type="password" autocomplete="current-password"></div>
+      <div class="group"><label class="label">رمز عبور</label><div class="password-wrap"><input class="field" id="loginPassword" type="password" autocomplete="current-password"><button type="button" class="password-toggle" data-target="loginPassword" aria-label="نمایش رمز عبور">👁</button></div></div>
       <div class="auth-error" id="loginError"></div>
       <button class="btn btn-primary auth-submit" id="loginBtn">ورود</button>
     </div>
 
     <div id="registerForm" class="auth-form hidden">
       <div class="group"><label class="label">نام کاربری</label><input class="field" id="regUsername" autocomplete="username"></div>
-      <div class="group"><label class="label">رمز عبور</label><input class="field" id="regPassword" type="password" autocomplete="new-password"></div>
-      <div class="group"><label class="label">تکرار رمز عبور</label><input class="field" id="regConfirm" type="password" autocomplete="new-password"></div>
+      <div class="group"><label class="label">رمز عبور</label><div class="password-wrap"><input class="field" id="regPassword" type="password" autocomplete="new-password"><button type="button" class="password-toggle" data-target="regPassword" aria-label="نمایش رمز عبور">👁</button></div></div>
+      <div class="group"><label class="label">تکرار رمز عبور</label><div class="password-wrap"><input class="field" id="regConfirm" type="password" autocomplete="new-password"><button type="button" class="password-toggle" data-target="regConfirm" aria-label="نمایش رمز عبور">👁</button></div></div>
       <div class="auth-error" id="regError"></div>
       <button class="btn btn-primary auth-submit" id="registerBtn">ثبت‌نام</button>
     </div>
@@ -141,9 +141,9 @@
 
         <div class="settings-section">
           <h3>تغییر رمز عبور</h3>
-          <div class="group"><label class="label">رمز عبور فعلی</label><input class="field" id="cpCurrent" type="password"></div>
-          <div class="group"><label class="label">رمز عبور جدید</label><input class="field" id="cpNew" type="password"></div>
-          <div class="group"><label class="label">تکرار رمز عبور جدید</label><input class="field" id="cpConfirm" type="password"></div>
+          <div class="group"><label class="label">رمز عبور فعلی</label><div class="password-wrap"><input class="field" id="cpCurrent" type="password"><button type="button" class="password-toggle" data-target="cpCurrent" aria-label="نمایش رمز عبور">👁</button></div></div>
+          <div class="group"><label class="label">رمز عبور جدید</label><div class="password-wrap"><input class="field" id="cpNew" type="password"><button type="button" class="password-toggle" data-target="cpNew" aria-label="نمایش رمز عبور">👁</button></div></div>
+          <div class="group"><label class="label">تکرار رمز عبور جدید</label><div class="password-wrap"><input class="field" id="cpConfirm" type="password"><button type="button" class="password-toggle" data-target="cpConfirm" aria-label="نمایش رمز عبور">👁</button></div></div>
           <div class="auth-error" id="cpError"></div>
           <button class="btn btn-primary btn-sm" id="cpBtn" style="margin-top:8px">ذخیره</button>
         </div>

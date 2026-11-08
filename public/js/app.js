@@ -632,6 +632,16 @@ function placeAddButton(){
 placeAddButton();
 window.addEventListener('resize', placeAddButton);
 
+// ---------- Password visibility toggle ----------
+document.addEventListener('click', e=>{
+  const btn = e.target.closest('.password-toggle');
+  if(!btn) return;
+  const input = document.getElementById(btn.dataset.target);
+  if(!input) return;
+  if(input.type === 'password'){ input.type='text'; btn.textContent='🙈'; btn.setAttribute('aria-label','مخفی کردن رمز عبور'); }
+  else { input.type='password'; btn.textContent='👁'; btn.setAttribute('aria-label','نمایش رمز عبور'); }
+});
+
 window.openModal=openModal; window.editItem=editItem; window.deleteItem=deleteItem;
 
 // ---------- Boot ----------
